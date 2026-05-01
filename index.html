@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0a0807">
+<meta name="description" content="THOMIZER — a polyphonic step sequencer with THOMLAY AY-Y420 and HOW MUCH? compression.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>THOMIZER</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+:root {
+  --bg: #0a0807;
+  --bg2: #120f0d;
+  --panel: #17110d;
+  --panel2: #21170f;
+  --panel3: #2b1d12;
+  --line: #3b2a1b;
+  --line2: #6a4727;
+  --amber: #ffb454;
+  --amber2: #d58b37;
+  --hot: #ff6238;
+  --ink: #f2d8a5;
+  --dim: #a68456;
+  --faint: #6b4a2a;
+  --glow: rgba(255,180,84,.11);
+  --scale-glow: rgba(255,180,84,.08);
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --dock-h: 74px;
+}
+body[data-scale="major"] { --scale-glow: rgba(255, 200, 92, .105); }
+body[data-scale="minor"] { --scale-glow: rgba(255, 142, 65, .10); }
+body[data-scale="dorian"] { --scale-glow: rgba(91, 190, 170, .105); }
+body[data-scale="phrygian"] { --scale-glow: rgba(255, 82, 56, .10); }
+body[data-scale="pentatonic"] { --scale-glow: rgba(255, 220, 120, .095); }
+body[data-scale="blues"] { --scale-glow: rgba(94, 112, 255, .11); }
+* { box-sizing: border-box; margin: 0; padding: 0; min-width: 0; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; max-width: 100%; overflow-x: clip; background: var(--bg); color: var(--ink); font-family: var(--mono); font-size: 12px; line-height: 1.35; -webkit-text-size-adjust: 100%; user-select: none; -webkit-user-select: none; overscroll-behavior: none; }
+body { min-height: 100vh; padding: 8px; padding-top: calc(8px + var(--safe-t)); padding-bottom: calc(var(--dock-h) + var(--safe-b) + 14px); background: radial-gradient(circle at 18% 4%, rgba(255,180,84,.13), transparent 34%), radial-gradient(circle at 78% 18%, var(--scale-glow), transparent 45%), linear-gradient(145deg, #070605, #120d0a 55%, #090706); transition: background 420ms ease; }
+body::before { content:""; position:fixed; inset:0; pointer-events:none; z-index:40; background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,0,0,.15) 2px 3px); mix-blend-mode:multiply; }
+body.ui-locked { position: fixed; overflow: hidden; inset: 0; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+input[type="range"] { touch-action: none; }
+:focus-visible { outline: 2px solid rgba(255,180,84,.72); outline-offset: 2px; }
+.app { width: min(100%, 1180px); margin: 0 auto; position: relative; }
+.brandbar { display:flex; align-items:center; justify-content:space-between; gap: 10px; min-height: 36px; padding: 6px 10px 8px; border: 1px solid var(--line); border-bottom: 0; background: linear-gradient(180deg, #1b130e, #100c09); box-shadow: inset 0 1px 0 rgba(255,255,255,.04); }
+.brand { font-weight:900; color:var(--amber); font-size: clamp(18px, 3vw, 28px); letter-spacing:-.07em; white-space:nowrap; }
+.brand i { font-family:var(--serif); font-weight:400; color: var(--ink); letter-spacing:-.04em; }
+.version { color:var(--hot); letter-spacing:.18em; font-size:9px; font-weight:800; white-space:nowrap; }
+.hint { color:var(--dim); font-size:9px; letter-spacing:.18em; text-align:right; white-space:nowrap; }
+.hardware { border: 1px solid var(--line); background: linear-gradient(180deg, rgba(255,255,255,.035), transparent 14%), linear-gradient(145deg, #1a120d, #0e0b09 48%, #20150e); box-shadow: inset 0 0 0 1px rgba(255,180,84,.045), 0 14px 60px rgba(0,0,0,.32); padding: 8px; position: relative; overflow: clip; }
+.hardware::before, .hardware::after { content:""; position:absolute; top:0; bottom:0; width: 11px; background: linear-gradient(90deg, #3a2112, #6c3d1e 38%, #2a170d); opacity:.75; pointer-events:none; }
+.hardware::before { left:0; }
+.hardware::after { right:0; transform: scaleX(-1); }
+.module-strip { display:grid; grid-template-columns: 1.08fr 1.7fr 1.55fr 1.35fr; gap: 6px; align-items: stretch; margin-bottom: 6px; padding-left: 9px; padding-right: 9px; }
+.module { border:1px solid var(--line); background: linear-gradient(180deg, rgba(255,180,84,.045), rgba(0,0,0,.04)), #150f0b; padding: 7px; min-height: 92px; box-shadow: inset 0 1px 0 rgba(255,255,255,.04), inset 0 -1px 0 rgba(0,0,0,.35); position: relative; }
+.module::after { content:""; position:absolute; left:7px; right:7px; bottom:5px; height:1px; background: linear-gradient(90deg, transparent, rgba(255,180,84,.25), transparent); pointer-events:none; }
+.module-title { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px; color:var(--amber); font-size:9px; letter-spacing:.18em; font-weight:900; white-space:nowrap; text-transform:uppercase; }
+.module-title small { color:var(--faint); letter-spacing:.14em; font-size:8px; }
+.transport-mini { display:grid; grid-template-columns: 42px 1fr; grid-template-rows: 42px auto; gap: 5px; }
+.play { width:42px; height:42px; border:0; background:linear-gradient(180deg, #ffc56e, #c9782d); color:#130c08; font-size:18px; font-weight:900; display:grid; place-items:center; box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 0 14px rgba(255,180,84,.22); }
+.play span { display:grid; place-items:center; width:20px; height:20px; line-height:1; }
+.play:active { transform: translateY(1px) scale(.985); }
+.play.playing { background: linear-gradient(180deg, #ff7654, #b82f22); box-shadow: 0 0 18px rgba(255,98,56,.35); }
+.bpm-read { display:flex; flex-direction:column; justify-content:center; border:1px solid var(--line); background:#0b0907; padding:3px 6px; }
+.bpm-read b { color: var(--amber); font-size:22px; line-height:1; letter-spacing:-.07em; font-variant-numeric: tabular-nums; }
+.bpm-read span { color:var(--faint); font-size:8px; letter-spacing:.2em; }
+.transport-mini .bpm-range { grid-column:1/-1; }
+.tiny-buttons { display:grid; grid-template-columns: 1fr 1fr; gap:5px; grid-column:1/-1; }
+.btn { border:1px solid var(--line); background:linear-gradient(180deg,#1b130e,#0e0a08); color:var(--dim); min-height:28px; padding:6px 8px; font-size:9px; letter-spacing:.16em; font-weight:900; white-space:nowrap; box-shadow: inset 0 1px 0 rgba(255,255,255,.035); }
+.btn:active, .btn.on { color:#130c08; background:var(--amber); border-color:var(--amber); }
+.btn.danger { color:var(--hot); border-color:rgba(255,98,56,.5); }
+.btn.danger:active { background:var(--hot); color:#130c08; }
+.voice-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.label { display:flex; flex-direction:column; gap:4px; color:var(--dim); font-size:8px; letter-spacing:.17em; font-weight:800; text-transform:uppercase; }
+select { width:100%; min-height:31px; border:1px solid var(--line); border-radius:0; background:#090806; color:var(--ink); padding:6px 24px 6px 7px; font-size:10px; letter-spacing:.08em; appearance:none; -webkit-appearance:none; background-image: linear-gradient(45deg, transparent 50%, var(--amber) 50%), linear-gradient(135deg, var(--amber) 50%, transparent 50%); background-position: calc(100% - 12px) center, calc(100% - 8px) center; background-size:4px 4px; background-repeat:no-repeat; }
+.thomlay-grid { display:grid; grid-template-columns: auto 82px 1fr 1fr 1fr; gap:6px; align-items:end; }
+.toggle { min-height:31px; border:1px solid var(--line); background:#0b0907; color:var(--dim); display:flex; align-items:center; justify-content:center; gap:7px; padding:6px 8px; font-size:9px; letter-spacing:.15em; font-weight:900; white-space:nowrap; }
+.toggle .dot { width:6px; height:6px; border-radius:50%; background:var(--faint); }
+.toggle.on { color:var(--amber); border-color:var(--line2); }
+.toggle.on .dot { background:var(--amber); box-shadow:0 0 7px rgba(255,180,84,.75); }
+.slider-box { display:flex; flex-direction:column; gap:3px; color:var(--dim); font-size:8px; letter-spacing:.15em; text-transform:uppercase; }
+.slider-line { display:grid; grid-template-columns: 1fr 34px; gap:6px; align-items:center; }
+.value { color:var(--amber); font-weight:900; font-variant-numeric:tabular-nums; text-align:right; }
+.how-grid { display:grid; grid-template-columns: 1fr 48px; gap:6px; align-items:center; }
+.how-title { font-family:var(--serif); font-style:italic; color:var(--ink); font-size:22px; letter-spacing:-.04em; line-height:1; }
+.how-state { color:var(--hot); font-size:8px; letter-spacing:.18em; margin-top:3px; font-weight:900; text-transform:uppercase; }
+.how-value { color:var(--amber); font-size:24px; font-weight:900; letter-spacing:-.08em; text-align:right; font-variant-numeric:tabular-nums; }
+input[type="range"] { width:100%; height:22px; appearance:none; -webkit-appearance:none; background:transparent; cursor:pointer; }
+input[type="range"]::-webkit-slider-runnable-track { height:5px; border:1px solid var(--line); background:linear-gradient(90deg, #070605, #17100b); box-shadow: inset 0 1px 2px rgba(0,0,0,.8); }
+input[type="range"]::-moz-range-track { height:5px; border:1px solid var(--line); background:#070605; }
+input[type="range"]::-webkit-slider-thumb { appearance:none; -webkit-appearance:none; width:18px; height:18px; margin-top:-8px; background:linear-gradient(180deg,#ffd083,#c2792f); border:0; border-radius:0; box-shadow:0 0 10px rgba(255,180,84,.22); }
+input[type="range"]::-moz-range-thumb { width:18px; height:18px; background:var(--amber); border:0; border-radius:0; }
+.sequencer { margin: 0 9px 8px; border: 1px solid var(--line2); background: #0c0907; box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 0 38px var(--scale-glow); transition: box-shadow 420ms ease; }
+.seq-head { display:grid; grid-template-columns: 44px repeat(16, 1fr); gap:2px; padding:6px 6px 4px; border-bottom:1px solid var(--line); background:linear-gradient(180deg,rgba(255,180,84,.04),transparent); }
+.seq-head div { text-align:center; color:var(--faint); font-size:8px; font-weight:900; font-variant-numeric:tabular-nums; }
+.seq-head div:nth-child(4n+2) { color:var(--amber); }
+.seq-grid { display:grid; grid-template-columns:44px repeat(16, 1fr); gap:2px; padding:6px; height: clamp(260px, 52vh, 510px); }
+.note-label { display:flex; align-items:center; justify-content:flex-end; padding-right:6px; color:var(--dim); font-size:9px; letter-spacing:.04em; font-weight:900; border-right:1px solid var(--line); font-variant-numeric:tabular-nums; }
+.cell { border:1px solid #24180f; background:linear-gradient(180deg,#12100d,#070605); min-height:16px; width:100%; height:100%; touch-action: manipulation; box-shadow: inset 0 1px 0 rgba(255,255,255,.025); }
+.cell.on { border-color:rgba(255,180,84,.75); background: radial-gradient(circle at 50% 35%, #ffe4a8, #ffb454 52%, #b56124); box-shadow: 0 0 10px rgba(255,180,84,.42), inset 0 1px 0 rgba(255,255,255,.22); }
+.cell.lit { box-shadow: 0 0 0 1px rgba(255,180,84,.35), 0 0 16px rgba(255,180,84,.3), inset 0 1px 0 rgba(255,255,255,.05); }
+.cell.on.lit { background: radial-gradient(circle at 50% 35%, #fff4cf, #ffd27b 52%, #e07a31); box-shadow: 0 0 18px rgba(255,217,166,.72); }
+.cell.beat { border-left-color:var(--line2); }
+.cell:active { transform:scale(.96); }
+.lock-float { position:fixed; right:calc(10px + env(safe-area-inset-right, 0px)); top:calc(10px + var(--safe-t)); z-index:80; border:1px solid var(--line2); background:rgba(10,8,7,.82); backdrop-filter: blur(12px); color:var(--amber); padding:8px 10px; font-size:9px; font-weight:900; letter-spacing:.16em; box-shadow:0 8px 28px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.04); }
+.lock-float.on { background:rgba(255,180,84,.92); color:#100a07; }
+.dock { position:fixed; left:50%; bottom:calc(8px + var(--safe-b)); transform:translateX(-50%); z-index:70; width:min(720px, calc(100% - 16px)); min-height:58px; border:1px solid var(--line2); background:rgba(14,10,8,.88); backdrop-filter: blur(14px); box-shadow:0 14px 40px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.04); display:grid; grid-template-columns:44px 78px 1fr auto auto auto; gap:6px; align-items:center; padding:7px; }
+.dock .play { width:44px; height:44px; }
+.dock-bpm { color:var(--amber); font-size:20px; font-weight:900; letter-spacing:-.06em; font-variant-numeric:tabular-nums; }
+.dock-bpm span { display:block; color:var(--faint); font-size:8px; letter-spacing:.2em; font-weight:700; }
+.dock.collapsed { width:auto; grid-template-columns:44px 74px auto; }
+.dock.collapsed .dock-range, .dock.collapsed #dock-regen, .dock.collapsed #dock-clear { display:none; }
+.collapse { width:28px; min-width:28px; padding:0; }
+.portrait-note { display:none; position:fixed; inset:0; z-index:120; background:rgba(8,6,5,.94); color:var(--ink); align-items:center; justify-content:center; text-align:center; padding:28px; }
+.portrait-note b { display:block; color:var(--amber); font-size:28px; letter-spacing:-.06em; margin-bottom:8px; }
+.portrait-note span { color:var(--dim); letter-spacing:.14em; font-size:10px; }
+@media (orientation: portrait) and (max-width: 720px) { .portrait-note { display:flex; flex-direction:column; } }
+@media (max-width: 900px) {
+  .module-strip { grid-template-columns:1fr 1fr; }
+  .seq-grid { height: clamp(240px, 48vh, 420px); }
+}
+@media (max-width: 640px) {
+  .hint { display:none; }
+  .module-strip { grid-template-columns:1fr; }
+  .thomlay-grid { grid-template-columns:1fr 1fr; }
+  .voice-grid { grid-template-columns:1fr 1fr; }
+  .seq-head, .seq-grid { grid-template-columns: 38px repeat(16, minmax(17px,1fr)); }
+  .note-label { font-size:8px; padding-right:4px; }
+  .dock { grid-template-columns:44px 72px 1fr auto; }
+  #dock-regen, #dock-clear { display:none; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body data-scale="minor">
+<button class="lock-float" id="screen-lock" aria-pressed="false">LOCK</button>
+<div class="portrait-note"><b>TURN ME SIDEWAYS</b><span>THOMIZER NEEDS THE WIDE GRID</span></div>
+<div class="app">
+  <header class="brandbar">
+    <div class="brand"><i>THOM</i>SIZER <span class="version">v.alpha.0.3</span></div>
+    <div class="hint">POLY STEP SEQUENCER · THOMLAY AY-Y420 · OFFLINE</div>
+  </header>
+  <main class="hardware">
+    <section class="module-strip" aria-label="controls">
+      <section class="module">
+        <div class="module-title">PLAYER <small>DOCKED</small></div>
+        <div class="transport-mini">
+          <button class="play" id="play" aria-label="play / stop"><span id="play-icon">▶</span></button>
+          <div class="bpm-read"><b id="bpm-display">100</b><span>BPM</span></div>
+          <input class="bpm-range" type="range" id="bpm" min="40" max="200" value="100" aria-label="tempo">
+          <div class="tiny-buttons">
+            <button class="btn" id="regen">REGEN</button>
+            <button class="btn danger" id="clear">CLEAR</button>
+          </div>
+        </div>
+      </section>
+      <section class="module">
+        <div class="module-title">VOICE <small>SCALE COLOR</small></div>
+        <div class="voice-grid">
+          <label class="label">Scale
+            <select id="scale">
+              <option value="major">MAJOR</option>
+              <option value="minor" selected>MINOR</option>
+              <option value="dorian">DORIAN</option>
+              <option value="phrygian">PHRYGIAN</option>
+              <option value="pentatonic">PENTATONIC</option>
+              <option value="blues">BLUES</option>
+            </select>
+          </label>
+          <label class="label">Root
+            <select id="root">
+              <option value="0">C</option><option value="1">C#</option><option value="2">D</option><option value="3">D#</option><option value="4">E</option><option value="5">F</option><option value="6">F#</option><option value="7">G</option><option value="8">G#</option><option value="9" selected>A</option><option value="10">A#</option><option value="11">B</option>
+            </select>
+          </label>
+          <label class="label">Octave
+            <select id="oct"><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option></select>
+          </label>
+          <label class="label">Sound
+            <select id="wave">
+              <option value="sine" selected>SINE</option>
+              <option value="chiptune">CHIPTUNE</option>
+              <option value="bell">BELL</option>
+              <option value="flute">FLUTE</option>
+              <option value="rave">RAVE STAB</option>
+              <option value="organ">DUB ORGAN</option>
+              <option value="choir">VOX CHOIR</option>
+            </select>
+          </label>
+        </div>
+      </section>
+      <section class="module">
+        <div class="module-title">THOMLAY AY-Y420 <small>TAIL FORCER</small></div>
+        <div class="thomlay-grid">
+          <button class="toggle on" id="delay-on" aria-pressed="true"><span class="dot"></span>DELAY</button>
+          <label class="label">RATE
+            <select id="delay-rate">
+              <option value="1/4">1/4</option><option value="1/4T">1/4T</option><option value="1/4D">1/4D</option><option value="1/8">1/8</option><option value="1/8T">1/8T</option><option value="1/8D" selected>1/8D</option><option value="1/16">1/16</option><option value="1/16T">1/16T</option><option value="1/16D">1/16D</option>
+            </select>
+          </label>
+          <label class="slider-box">MIX <span class="slider-line"><input type="range" id="delay-mix" min="0" max="100" value="25"><span class="value" id="delay-mix-v">25</span></span></label>
+          <label class="slider-box">FEEDBACK <span class="slider-line"><input type="range" id="delay-fb" min="0" max="80" value="35"><span class="value" id="delay-fb-v">35</span></span></label>
+          <label class="slider-box">FORCER <span class="slider-line"><input type="range" id="forcer" min="0" max="100" value="28"><span class="value" id="forcer-v">28</span></span></label>
+        </div>
+      </section>
+      <section class="module">
+        <div class="module-title">HOW MUCH? <small>GLUE / TAPE</small></div>
+        <div class="how-grid">
+          <div><div class="how-title">HOW MUCH?</div><div class="how-state" id="comp-state">GLUE</div></div>
+          <div class="how-value" id="comp-amount-v">40</div>
+          <input style="grid-column:1/-1" type="range" id="comp-amount" min="0" max="100" value="40" aria-label="compression amount">
+        </div>
+      </section>
+    </section>
+    <section class="sequencer" aria-label="polyphonic sequencer">
+      <div class="seq-head" id="seq-head"></div>
+      <div class="seq-grid" id="grid"></div>
+    </section>
+  </main>
+</div>
+<nav class="dock" id="dock" aria-label="sticky player">
+  <button class="play" id="dock-play" aria-label="play / stop"><span id="dock-play-icon">▶</span></button>
+  <div class="dock-bpm"><b id="dock-bpm-display">100</b><span>BPM</span></div>
+  <input class="dock-range" type="range" id="dock-bpm" min="40" max="200" value="100" aria-label="tempo dock">
+  <button class="btn" id="dock-regen">REGEN</button>
+  <button class="btn danger" id="dock-clear">CLEAR</button>
+  <button class="btn collapse" id="dock-collapse" aria-label="collapse player">−</button>
+</nav>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const SCALES = {
+  major: [0,2,4,5,7,9,11],
+  minor: [0,2,3,5,7,8,10],
+  dorian: [0,2,3,5,7,9,10],
+  phrygian: [0,1,3,5,7,8,10],
+  pentatonic: [0,2,4,7,9],
+  blues: [0,3,5,6,7,10]
+};
+const STEPS = 16;
+let scaleName = 'minor';
+let root = 9;
+let octave = 4;
+let wave = 'sine';
+let bpm = 100;
+let delayRate = '1/8D';
+let compAmount = 0.4;
+let forcerAmount = 0.28;
+let delayOn = true;
+let pattern = [
+  new Set([3]), new Set(), new Set(), new Set([1]),
+  new Set(), new Set([4]), new Set(), new Set(),
+  new Set([2]), new Set(), new Set(), new Set([5]),
+  new Set(), new Set([3]), new Set(), new Set()
+];
+let ctx = null, masterIn = null, delayNode = null, delayFb = null, delayWet = null, delayDry = null;
+let echoLow = null, echoHigh = null, echoDrive = null, comp = null, busDrive = null, masterOut = null;
+let playing = false, nextTime = 0, stepIdx = 0, timer = null, lockedScrollY = 0;
+function midiToFreq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+function getRows() { return SCALES[scaleName].length; }
+function rowToMidi(row) { return 12 * (octave + 1) + root + SCALES[scaleName][row]; }
+function midiLabel(m) { return NOTE_NAMES[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1); }
+function delayRateToSeconds(rate, bpmVal) {
+  const quarter = 60 / bpmVal;
+  const base = { '1/4': quarter, '1/8': quarter / 2, '1/16': quarter / 4 };
+  const m = rate.match(/^(1\/(?:4|8|16))(T|D)?$/);
+  if (!m) return quarter / 2;
+  let s = base[m[1]];
+  if (m[2] === 'T') s *= 2 / 3;
+  if (m[2] === 'D') s *= 1.5;
+  return Math.min(s, 1.5);
+}
+function makeCurve(amount) {
+  const n = 256;
+  const curve = new Float32Array(n);
+  const drive = 1 + amount * 18;
+  for (let i = 0; i < n; i++) {
+    const x = i * 2 / (n - 1) - 1;
+    curve[i] = Math.tanh(x * drive) / Math.tanh(drive);
+  }
+  return curve;
+}
+function ensureCtx() {
+  if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return ctx; }
+  const Ctor = window.AudioContext || window.webkitAudioContext;
+  if (!Ctor) return null;
+  ctx = new Ctor();
+  masterIn = ctx.createGain(); masterIn.gain.value = 0.9;
+  delayNode = ctx.createDelay(1.5); delayNode.delayTime.value = delayRateToSeconds(delayRate, bpm);
+  delayFb = ctx.createGain(); delayFb.gain.value = 0.35;
+  delayWet = ctx.createGain(); delayWet.gain.value = 0.25;
+  delayDry = ctx.createGain(); delayDry.gain.value = 1;
+  echoLow = ctx.createBiquadFilter(); echoLow.type = 'lowshelf'; echoLow.frequency.value = 260; echoLow.gain.value = 0;
+  echoHigh = ctx.createBiquadFilter(); echoHigh.type = 'highshelf'; echoHigh.frequency.value = 3300; echoHigh.gain.value = 0;
+  echoDrive = ctx.createWaveShaper(); echoDrive.oversample = '2x'; echoDrive.curve = makeCurve(forcerAmount * 0.55);
+  comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -16; comp.knee.value = 8; comp.ratio.value = 3; comp.attack.value = 0.01; comp.release.value = 0.1;
+  busDrive = ctx.createWaveShaper(); busDrive.oversample = '2x'; busDrive.curve = makeCurve(compAmount * 0.18);
+  masterOut = ctx.createGain(); masterOut.gain.value = 0.76;
+  masterIn.connect(delayDry);
+  masterIn.connect(delayNode);
+  delayNode.connect(delayWet);
+  delayNode.connect(echoLow);
+  echoLow.connect(echoHigh);
+  echoHigh.connect(echoDrive);
+  echoDrive.connect(delayFb);
+  delayFb.connect(delayNode);
+  delayDry.connect(comp);
+  delayWet.connect(comp);
+  comp.connect(busDrive);
+  busDrive.connect(masterOut);
+  masterOut.connect(ctx.destination);
+  applyCompAmount(); applyForcerAmount(); applyDelayBypass();
+  return ctx;
+}
+function applyCompAmount() {
+  if (!ctx || !comp || !busDrive) return;
+  const a = compAmount, t = ctx.currentTime;
+  comp.threshold.setTargetAtTime(-a * 42, t, 0.02);
+  comp.ratio.setTargetAtTime(1 + a * 13, t, 0.02);
+  comp.knee.setTargetAtTime(5 + (1 - a) * 8, t, 0.02);
+  comp.attack.setTargetAtTime(0.003 + (1 - a) * 0.02, t, 0.02);
+  comp.release.setTargetAtTime(0.045 + (1 - a) * 0.18, t, 0.02);
+  busDrive.curve = makeCurve(a * 0.36);
+  masterOut.gain.setTargetAtTime(0.86 - a * 0.14, t, 0.02);
+}
+function applyForcerAmount() {
+  if (!ctx || !echoLow || !echoHigh || !echoDrive || !delayFb) return;
+  const a = forcerAmount, t = ctx.currentTime;
+  echoLow.gain.setTargetAtTime(-a * 10, t, 0.025);
+  echoHigh.gain.setTargetAtTime(-a * 15, t, 0.025);
+  echoDrive.curve = makeCurve(a * 0.72);
+  const fbBase = Number($('delay-fb').value) / 100;
+  delayFb.gain.setTargetAtTime(Math.min(0.86, fbBase + a * 0.07), t, 0.025);
+}
+function applyDelayBypass() {
+  if (!ctx || !delayWet) return;
+  const mix = delayOn ? Number($('delay-mix').value) / 100 * 0.72 : 0;
+  delayWet.gain.setTargetAtTime(mix, ctx.currentTime, 0.012);
+}
+function envGain(g, when, peak, attack, decay, sustain, release, dur) {
+  g.gain.setValueAtTime(0.0001, when);
+  g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0002), when + attack);
+  g.gain.exponentialRampToValueAtTime(Math.max(peak * sustain, 0.0002), when + attack + decay);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + dur + release);
+}
+function noiseBuffer() {
+  const len = Math.floor(ctx.sampleRate * 0.32);
+  const b = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = b.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  return b;
+}
+function playNote(when, midi, duration, voiceScale) {
+  if (!ctx) return;
+  const freq = midiToFreq(midi);
+  const peak = 0.20 * voiceScale;
+  const dest = masterIn || ctx.destination;
+  if (wave === 'bell') {
+    const carrier = ctx.createOscillator(), mod = ctx.createOscillator(), mg = ctx.createGain(), g = ctx.createGain();
+    carrier.frequency.value = freq; mod.frequency.value = freq * 3.4; mg.gain.value = freq * 1.35;
+    mod.connect(mg); mg.connect(carrier.frequency); carrier.connect(g); g.connect(dest);
+    envGain(g, when, peak * 1.35, 0.004, 0.06, 0.28, duration * 3.4, duration * 1.1);
+    mg.gain.setValueAtTime(freq * 1.35, when); mg.gain.exponentialRampToValueAtTime(freq * 0.08, when + duration * 3.5);
+    carrier.start(when); mod.start(when); carrier.stop(when + duration * 4.7); mod.stop(when + duration * 4.7);
+    return;
+  }
+  if (wave === 'flute') {
+    const o = ctx.createOscillator(), vib = ctx.createOscillator(), vg = ctx.createGain(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq; vib.type = 'sine'; vib.frequency.value = 5.2; vg.gain.value = freq * 0.006;
+    vib.connect(vg); vg.connect(o.frequency); f.type = 'lowpass'; f.frequency.value = 2300; f.Q.value = 0.8;
+    o.connect(f); f.connect(g); g.connect(dest); envGain(g, when, peak * 0.92, 0.035, 0.12, 0.62, 0.18, duration * 1.35);
+    const n = ctx.createBufferSource(), ng = ctx.createGain(), nf = ctx.createBiquadFilter();
+    n.buffer = noiseBuffer(); nf.type = 'bandpass'; nf.frequency.value = 3600; nf.Q.value = 0.7; ng.gain.value = 0.012 * voiceScale;
+    n.connect(nf); nf.connect(ng); ng.connect(dest); n.start(when); n.stop(when + duration * 1.7);
+    o.start(when); vib.start(when); o.stop(when + duration * 1.7); vib.stop(when + duration * 1.7);
+    return;
+  }
+  if (wave === 'rave') {
+    const g = ctx.createGain(), f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(4400, when); f.frequency.exponentialRampToValueAtTime(760, when + duration * 0.85); f.Q.value = 2.4;
+    ['sawtooth','square'].forEach((type, i) => { const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq * (i ? 1.005 : 0.995); o.connect(f); o.start(when); o.stop(when + duration * 1.5); });
+    f.connect(g); g.connect(dest); envGain(g, when, peak * 0.85, 0.003, 0.045, 0.18, 0.10, duration * 0.95);
+    return;
+  }
+  if (wave === 'organ' || wave === 'choir') {
+    const g = ctx.createGain();
+    const f = ctx.createBiquadFilter(); f.type = wave === 'choir' ? 'bandpass' : 'lowpass'; f.frequency.value = wave === 'choir' ? 920 : 1800; f.Q.value = wave === 'choir' ? 1.3 : 0.9;
+    const types = wave === 'choir' ? ['sine','triangle','sine'] : ['square','triangle'];
+    types.forEach((type, i) => { const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq * (1 + (i - 1) * (wave === 'choir' ? 0.006 : 0.003)); o.connect(f); o.start(when); o.stop(when + duration * (wave === 'choir' ? 2.5 : 1.8)); });
+    f.connect(g); g.connect(dest); envGain(g, when, peak * (wave === 'choir' ? 0.56 : 0.82), wave === 'choir' ? 0.08 : 0.018, 0.15, wave === 'choir' ? 0.72 : 0.58, wave === 'choir' ? 0.38 : 0.16, duration * 1.45);
+    return;
+  }
+  const o = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+  o.type = wave === 'chiptune' ? 'square' : 'sine'; o.frequency.value = freq;
+  f.type = 'lowpass'; f.frequency.value = wave === 'chiptune' ? 4200 : 5200; f.Q.value = 0.7;
+  o.connect(f); f.connect(g); g.connect(dest);
+  envGain(g, when, peak, 0.004, wave === 'chiptune' ? 0.035 : 0.07, wave === 'chiptune' ? 0.25 : 0.5, 0.08, duration * 1.25);
+  o.start(when); o.stop(when + duration * 1.55);
+}
+function render() {
+  const rows = getRows();
+  $('seq-head').innerHTML = '<div>NOTE</div>' + Array.from({length: STEPS}, (_, i) => '<div>' + (i + 1) + '</div>').join('');
+  const grid = $('grid'); grid.innerHTML = '';
+  for (let visual = rows - 1; visual >= 0; visual--) {
+    const lab = document.createElement('div'); lab.className = 'note-label'; lab.textContent = midiLabel(rowToMidi(visual)); grid.appendChild(lab);
+    for (let s = 0; s < STEPS; s++) {
+      const c = document.createElement('button'); c.className = 'cell'; if (s % 4 === 0) c.classList.add('beat'); c.dataset.step = s; c.dataset.row = visual; c.setAttribute('aria-label', 'step ' + (s + 1) + ' note ' + lab.textContent); c.setAttribute('aria-pressed', pattern[s].has(visual));
+      if (pattern[s].has(visual)) c.classList.add('on');
+      c.addEventListener('pointerdown', e => { e.preventDefault(); toggleCell(s, visual, c); });
+      grid.appendChild(c);
+    }
+  }
+}
+function toggleCell(step, row, el) {
+  if (pattern[step].has(row)) pattern[step].delete(row); else pattern[step].add(row);
+  el.classList.toggle('on', pattern[step].has(row));
+  el.setAttribute('aria-pressed', pattern[step].has(row));
+  if (pattern[step].has(row)) { const c = ensureCtx(); if (c) playNote(c.currentTime + 0.01, rowToMidi(row), 0.18, 1); }
+}
+function lightStep(step) {
+  document.querySelectorAll('.cell.lit').forEach(el => el.classList.remove('lit'));
+  document.querySelectorAll('.cell[data-step="' + step + '"]').forEach(el => el.classList.add('lit'));
+}
+function playStep(step, when, stepDur) {
+  const rows = Array.from(pattern[step]);
+  if (!rows.length) return;
+  const gainScale = 1 / Math.sqrt(rows.length);
+  rows.forEach(row => playNote(when, rowToMidi(row), stepDur * 1.25, gainScale));
+}
+function scheduler() {
+  if (!playing || !ctx) return;
+  while (nextTime < ctx.currentTime + 0.1) {
+    const stepDur = (60 / bpm) / 4;
+    const cur = stepIdx, when = nextTime;
+    playStep(cur, when, stepDur);
+    setTimeout(() => lightStep(cur), Math.max(0, (when - ctx.currentTime) * 1000));
+    nextTime += stepDur; stepIdx = (stepIdx + 1) % STEPS;
+  }
+  timer = setTimeout(scheduler, 25);
+}
+function syncPlayUI() {
+  $('play-icon').textContent = playing ? '■' : '▶'; $('dock-play-icon').textContent = playing ? '■' : '▶';
+  $('play').classList.toggle('playing', playing); $('dock-play').classList.toggle('playing', playing);
+}
+function start() { const c = ensureCtx(); if (!c) return; playing = true; stepIdx = 0; nextTime = c.currentTime + 0.05; syncPlayUI(); scheduler(); }
+function stop() { playing = false; if (timer) clearTimeout(timer); timer = null; syncPlayUI(); document.querySelectorAll('.cell.lit').forEach(el => el.classList.remove('lit')); }
+function regenerate() {
+  const rows = getRows();
+  for (let s = 0; s < STEPS; s++) {
+    pattern[s] = new Set();
+    const chance = (s % 4 === 0) ? 0.44 : 0.28;
+    if (Math.random() < chance) pattern[s].add(Math.floor(Math.random() * rows));
+    if (Math.random() < 0.12) pattern[s].add(Math.floor(Math.random() * rows));
+    if (s % 4 === 0 && Math.random() < 0.10) pattern[s].add(Math.floor(Math.random() * rows));
+  }
+  render();
+}
+function clearPattern() { pattern = Array.from({length: STEPS}, () => new Set()); render(); }
+function setBpm(v) {
+  bpm = Number(v); $('bpm').value = bpm; $('dock-bpm').value = bpm; $('bpm-display').textContent = bpm; $('dock-bpm-display').textContent = bpm;
+  if (delayNode && ctx) delayNode.delayTime.setTargetAtTime(delayRateToSeconds(delayRate, bpm), ctx.currentTime, 0.04);
+}
+function updateCompLabel() { const v = Number($('comp-amount').value); $('comp-amount-v').textContent = v; $('comp-state').textContent = v < 22 ? 'LOOSE' : v < 52 ? 'GLUE' : v < 78 ? 'CRUSH' : 'PANIC'; }
+function toggleScreenLock() {
+  const active = !document.body.classList.contains('ui-locked');
+  if (active) { lockedScrollY = window.scrollY || 0; document.body.style.top = '-' + lockedScrollY + 'px'; document.body.classList.add('ui-locked'); }
+  else { document.body.classList.remove('ui-locked'); document.body.style.top = ''; window.scrollTo(0, lockedScrollY); }
+  $('screen-lock').classList.toggle('on', active); $('screen-lock').textContent = active ? 'LOCKED' : 'LOCK'; $('screen-lock').setAttribute('aria-pressed', active);
+}
+function wire() {
+  $('play').addEventListener('click', () => playing ? stop() : start()); $('dock-play').addEventListener('click', () => playing ? stop() : start());
+  $('regen').addEventListener('click', regenerate); $('dock-regen').addEventListener('click', regenerate);
+  $('clear').addEventListener('click', clearPattern); $('dock-clear').addEventListener('click', clearPattern);
+  $('bpm').addEventListener('input', e => setBpm(e.target.value)); $('dock-bpm').addEventListener('input', e => setBpm(e.target.value));
+  $('scale').addEventListener('change', e => { scaleName = e.target.value; document.body.dataset.scale = scaleName; const rows = getRows(); pattern.forEach(set => Array.from(set).forEach(r => { if (r >= rows) set.delete(r); })); render(); });
+  $('root').addEventListener('change', e => { root = Number(e.target.value); render(); });
+  $('oct').addEventListener('change', e => { octave = Number(e.target.value); render(); });
+  $('wave').addEventListener('change', e => { wave = e.target.value; });
+  $('delay-on').addEventListener('click', () => { delayOn = !delayOn; $('delay-on').classList.toggle('on', delayOn); $('delay-on').setAttribute('aria-pressed', delayOn); applyDelayBypass(); });
+  $('delay-rate').addEventListener('change', e => { delayRate = e.target.value; if (delayNode && ctx) delayNode.delayTime.setTargetAtTime(delayRateToSeconds(delayRate, bpm), ctx.currentTime, 0.04); });
+  $('delay-mix').addEventListener('input', e => { $('delay-mix-v').textContent = e.target.value; applyDelayBypass(); });
+  $('delay-fb').addEventListener('input', e => { $('delay-fb-v').textContent = e.target.value; applyForcerAmount(); });
+  $('forcer').addEventListener('input', e => { forcerAmount = Number(e.target.value) / 100; $('forcer-v').textContent = e.target.value; applyForcerAmount(); });
+  $('comp-amount').addEventListener('input', e => { compAmount = Number(e.target.value) / 100; updateCompLabel(); applyCompAmount(); });
+  $('screen-lock').addEventListener('click', toggleScreenLock);
+  $('dock-collapse').addEventListener('click', () => { $('dock').classList.toggle('collapsed'); $('dock-collapse').textContent = $('dock').classList.contains('collapsed') ? '+' : '−'; });
+  document.addEventListener('keydown', e => { if (['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return; if (e.code === 'Space') { e.preventDefault(); playing ? stop() : start(); } });
+}
+wire(); updateCompLabel(); render();
+</script>
+</body>
+</html>
