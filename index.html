@@ -62,19 +62,54 @@ input[type="range"]{width:100%;height:24px;appearance:none;-webkit-appearance:no
 @media (max-width:900px){:root{--dock-h:38px;--controls-h:40px;--edge-l:max(24px,var(--safe-l));--edge-r:max(16px,var(--safe-r))}.hint{font-size:7px}.brand{font-size:17px}.top-strip{grid-template-columns:1fr 1fr;gap:5px;padding:0 8px}.thomlay-row{grid-template-columns:84px 76px 58px minmax(58px,1fr) minmax(72px,1.05fr) minmax(54px,.9fr);gap:4px}.side-label{font-size:6px}.mini-slider{grid-template-columns:38px minmax(36px,1fr) 20px;gap:4px}.micro-value{font-size:8px}.dock{grid-template-columns:29px 36px minmax(58px,.68fr) minmax(62px,76px) minmax(48px,60px) minmax(44px,54px) minmax(78px,106px) 76px;gap:3px}.dock .play{width:29px;height:29px}.dock-select{font-size:7px;height:26px}.btn{font-size:6px;height:25px}.seq-head{flex-basis:18px}.seq-head,.seq-grid{grid-template-columns:32px repeat(16,1fr)}.note-label{font-size:8px}}
 @media (max-width:640px){.hint{display:none}.top-strip{grid-template-columns:1fr 1fr;gap:4px;padding:0 7px}.side-label{font-size:5.5px}.thomlay-row{grid-template-columns:64px 54px 48px repeat(3,minmax(42px,1fr));gap:3px}.forcer-row{grid-template-columns:54px 38px minmax(64px,1fr) 46px 25px}.seq-head,.seq-grid{grid-template-columns:30px repeat(16,minmax(14px,1fr))}.note-label{font-size:7px}.dock{grid-template-columns:28px 34px minmax(50px,1fr) 60px 46px 42px 74px 66px}.dock-select{font-size:6.5px}.btn{font-size:6px}.mini-name{font-size:5.5px}.mini-slider{grid-template-columns:1fr}.mini-slider .micro-value{display:none}}
 </style>
+
+  /*
+   * Overrides for v.alpha.0.11
+   * Adjust module proportions, align content rails, and refine slider aesthetics.
+   */
+  .top-strip {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  }
+
+  /* Widen THOMLAY controls: label, toggle, rate, mix, feedback, grit */
+  .thomlay-row {
+    grid-template-columns: 100px 84px 70px minmax(90px, 1fr) minmax(100px, 1.2fr) minmax(90px, 1fr);
+  }
+
+  /* Narrow FORCER strip */
+  .forcer-row {
+    grid-template-columns: 72px 54px minmax(0, 1fr) 60px 34px;
+  }
+
+  /* Harmonize colours for Forcer extremes */
+  .force-end {
+    color: var(--ink);
+  }
+  .force-low {
+    color: var(--ink);
+  }
+  .force-high {
+    color: var(--ink);
+  }
+
+  /* Allow multi-line module labels */
+  .side-label span {
+    display: block;
+    line-height: 1;
+  }
 </head>
 <body data-scale="minor">
 <div class="portrait-note"><b>TURN ME SIDEWAYS</b><span>THOMIZER NEEDS THE WIDE GRID</span></div>
 <div class="app">
   <header class="brandbar">
-    <div class="brand"><i>THOM</i>IZER <span class="version">v.alpha.0.10</span></div>
+    <div class="brand"><i>THOM</i>IZER <span class="version">v.alpha.0.11</span></div>
     <div class="hint">POLY STEP SEQUENCER · THOMLAY AY-Y420 · OFFLINE</div>
   </header>
   <main class="hardware">
     <section class="top-strip" aria-label="controls">
       <section class="module thomlay-module">
         <div class="thomlay-row">
-          <div class="side-label">THOMLAY AY-Y420</div>
+          <div class="side-label"><span>THOMLAY</span><span>AY-Y420</span></div>
           <button class="toggle on" id="delay-on" aria-pressed="true"><span class="dot"></span>DELAY</button>
           <label class="label">Rate
             <select id="delay-rate">
@@ -88,7 +123,7 @@ input[type="range"]{width:100%;height:24px;appearance:none;-webkit-appearance:no
       </section>
       <section class="module how-module">
         <div class="forcer-row">
-          <div class="side-label">FORCER</div>
+          <div class="side-label"><span>FORCER</span><span>TF-6000</span></div>
           <div class="force-end force-low" id="comp-state">GENTLE</div>
           <input type="range" id="comp-amount" min="0" max="100" value="35" aria-label="forcer amount">
           <div class="force-end force-high">NOT SO<br>GENTLE</div>
