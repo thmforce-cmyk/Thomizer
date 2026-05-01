@@ -16,5 +16,7 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "description": "Hardware-style Web Audio step sequencer and mobile PWA.",
+  "orientation": "landscape"
 }
