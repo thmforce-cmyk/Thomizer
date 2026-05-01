@@ -1,8 +1,8 @@
 {
   "name": "Thomizer",
   "short_name": "Thomizer",
-  "start_url": "./",
-  "display": "standalone",
+  "start_url": "./?pwa=1",
+  "display": "fullscreen",
   "background_color": "#0a0807",
   "theme_color": "#0a0807",
   "icons": [
@@ -17,6 +17,11 @@
       "type": "image/png"
     }
   ],
-  "description": "Hardware-style Web Audio step sequencer and mobile PWA.",
-  "orientation": "landscape"
+  "description": "Hardware-style Web Audio step sequencer and fullscreen mobile PWA.",
+  "orientation": "landscape",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "scope": "./"
 }
