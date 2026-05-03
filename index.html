@@ -167,13 +167,58 @@ input[type="range"]{width:100%;height:24px;appearance:none;-webkit-appearance:no
   .top-button,.top-strip select,.value-box{font-size:7px}
 }
 
+
+/* v18 final alignment patch: forcer usable range + unified wordmark */
+.brand{font-family:var(--mono)!important;font-weight:900!important;color:var(--amber)!important;letter-spacing:-.055em!important;}
+.brand i{font-family:inherit!important;font-weight:inherit!important;color:inherit!important;letter-spacing:inherit!important;}
+.forcer-strip{grid-template-columns:clamp(48px,5.2vw,60px) minmax(0,1fr) var(--force-value-w)!important;}
+.forcer-strip .range-title,.forcer-strip .value-title{display:none!important;}
+.forcer-strip .range-assembly.control-cell{
+  grid-column:2!important;
+  grid-row:1 / span 2!important;
+  height:100%!important;
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  grid-template-rows:var(--top-title-h) var(--top-control-h)!important;
+  column-gap:4px!important;
+  row-gap:3px!important;
+  align-items:end!important;
+  min-width:0!important;
+}
+.forcer-strip .range-assembly input[type="range"]{
+  grid-column:1 / 3!important;
+  grid-row:2!important;
+  width:100%!important;
+  height:var(--top-control-h)!important;
+  min-width:0!important;
+}
+.forcer-strip .range-end{
+  grid-row:1!important;
+  height:auto!important;
+  align-self:end!important;
+  color:var(--ink)!important;
+  font-size:5.9px!important;
+  letter-spacing:.095em!important;
+  line-height:1!important;
+  white-space:normal!important;
+}
+.forcer-strip .force-low{grid-column:1!important;justify-content:flex-start!important;text-align:left!important;}
+.forcer-strip .force-high{grid-column:2!important;justify-content:flex-end!important;text-align:right!important;}
+.forcer-strip #comp-amount-v{grid-column:3!important;grid-row:2!important;height:var(--top-control-h)!important;align-self:end!important;}
+@media (max-width:900px){
+  .forcer-strip .range-end{font-size:5.1px!important;letter-spacing:.075em!important;}
+}
+@media (max-width:640px){
+  .forcer-strip .range-end{font-size:4.6px!important;letter-spacing:.055em!important;}
+}
+
 </style>
 </head>
 <body data-scale="minor">
 <div class="portrait-note"><b>TURN ME SIDEWAYS</b><span>THOMIZER NEEDS THE WIDE GRID</span></div>
 <div class="app">
   <header class="brandbar">
-    <div class="brand"><i>THOM</i>IZER <span class="version">v.alpha.0.16</span></div>
+    <div class="brand">THOMIZER <span class="version">v.alpha.0.18</span></div>
     <div class="hint">POLY STEP SEQUENCER · THOMLAY AY-Y420 · OFFLINE</div>
   </header>
   <main class="hardware">
@@ -200,12 +245,10 @@ input[type="range"]{width:100%;height:24px;appearance:none;-webkit-appearance:no
       <section class="module how-module">
         <div class="module-grid forcer-strip">
           <div class="module-id"><span>FORCER</span><span class="model">TF-6000</span></div>
-          <span class="field-title range-title">AMOUNT</span>
-          <span class="field-title value-title">VAL</span>
           <div class="range-assembly control-cell">
-            <span class="range-end">GENTLE</span>
+            <span class="range-end force-low">GENTLE</span>
             <input type="range" id="comp-amount" min="0" max="100" value="35" aria-label="forcer amount">
-            <span class="range-end">NOT SO<br>GENTLE</span>
+            <span class="range-end force-high">NOT SO<br>GENTLE</span>
           </div>
           <div class="value-box control-cell" id="comp-amount-v">35</div>
         </div>
